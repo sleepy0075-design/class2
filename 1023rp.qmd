@@ -1,0 +1,104 @@
+---
+title: "Mid_report"
+format: dashboard
+theme: journal
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+library(ggplot2)
+library(dplyr)
+library(plotly)
+
+food_report <- read.csv("C:/Users/winni/Documents/class2/restaurant report/food_report_clean.csv")
+```
+
+## Row {height="10%"}
+
+```{r}
+#| content: valuebox
+#| title: "Total transactions in dataset"
+#| icon: 
+#| color: warning
+list(value = nrow(food_report))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Median of transaction amount in dataset"
+#| icon: 
+#| color: primary
+list(value = round(median(food_report$transaction_amount, na.rm = FALSE)))
+```
+
+## Row {height="45%"}
+
+### Column {width="33%"}
+
+```{r}
+#| title: "1.Transactions of each time period"
+food_report %>%
+  count(time_of_sale, item_type) %>%
+  mutate(item_type = factor(item_type, labels = c("Beverages", "Fastfood"))) %>%
+  ggplot(aes(x = factor(time_of_sale), y = n, fill = item_type)) +
+  geom_col(position = "dodge") +
+  labs(x = "Time Period", y = "Number of Transaction", fill = "Item type")
+```
+
+### Column {width="33%"}
+
+```{r}
+ggplot(food_report, aes(x = factor(time_of_sale), y =  transaction_amount)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.6) +
+  labs(x = "Time period", y = "Transaction amount", title = "2.Transaction amount of each time period")
+```
+
+### 
+
+## Row {height="45%"}
+
+### Column {width="50%"}
+
+```{r}
+
+fastfood_data <- food_report %>%
+  filter(item_type == "Fastfood") %>%
+  group_by(time_of_sale) %>%
+  summarise(total_quantity = sum(quantity, na.rm = TRUE),
+            .groups = "drop")
+
+
+ggplot(fastfood_data,
+       aes(x = time_of_sale, y = total_quantity)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "3.Fastfood Sales by Time",
+    x = "Time of Sale",
+    y = "Total Quantity"
+  ) +
+  theme_minimal()
+```
+
+### Column {width="50%"}
+
+```{r}
+beverages_data <- food_report %>%
+  filter(item_type == "Beverages") %>%
+  group_by(time_of_sale) %>%
+  summarise(total_quantity = sum(quantity, na.rm = TRUE),
+            .groups = "drop")
+
+ggplot(beverages_data,
+       aes(x = time_of_sale, y = total_quantity)) +
+  geom_col(fill = "red", alpha = 0.65) +
+  labs(
+    title = "4.Beverages Sales by Time",
+    x = "Time of Sale",
+    y = "Total Quantity"
+  ) +
+  theme_minimal()
+```
